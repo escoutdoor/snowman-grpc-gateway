@@ -1,0 +1,109 @@
+syntax = "proto3";
+
+package snowman.v1;
+
+import "buf/validate/validate.proto";
+import "google/api/field_behavior.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+
+option go_package = "github.com/escoutdoor/snowman-grpc-gateway/pkg;snowman";
+
+message Snowman {
+    // id - unique identifier of snowman
+    string id = 1 [
+        json_name = "id",
+        (google.api.field_behavior) = REQUIRED,
+        (buf.validate.field).string.uuid = true
+    ];
+    // name - snowman name
+    string name = 2 [
+        json_name = "name",
+        (google.api.field_behavior) = REQUIRED,
+        (buf.validate.field).string.min_len = 1
+    ];
+    // height - snowman's height in cms
+    int32 height = 3 [
+        json_name = "height",
+        (google.api.field_behavior) = REQUIRED,
+        (buf.validate.field).int32 = {
+            gte: 10,
+            lte: 300,
+        }
+    ];
+    // width - snowman's width in cms
+    int32 width = 4 [
+        json_name = "width",
+        (google.api.field_behavior) = REQUIRED,
+        (buf.validate.field).int32 = {
+            gte: 10,
+            lte: 300
+        }
+    ];
+}
+
+message BuildSnowmanRequest {
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
+        json_schema: {
+            title: "BuildSnowmanRequest"
+            description: "BuildSnowmanRequest - request of Build"
+            required: ["name", "height", "width"]
+        }
+    };
+
+    // snowman name
+    string name = 1 [
+        json_name = "name",
+        (google.api.field_behavior) = REQUIRED,
+        (buf.validate.field).string.min_len = 1
+    ];
+    // snowman height in cms
+    int32 height = 2 [
+        json_name = "height",
+        (google.api.field_behavior) = REQUIRED,
+        (buf.validate.field).int32 = {
+            gte: 10,
+            lte: 300
+        }
+    ];
+    // snowman width in cms
+    int32 width = 3 [
+        json_name = "width",
+        (google.api.field_behavior) = REQUIRED,
+        (buf.validate.field).int32 = {
+            gte: 10,
+            lte: 300
+        }
+    ];
+}
+
+message BuildSnowmanResponse {
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
+        json_schema: {
+            title: "BuildSnowmanResponse"
+            description: "BuildSnowmanResponse - response of Build"
+        }
+    };
+
+    string id = 1 [
+        json_name = "id",
+        (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+            format: "uuid"
+            description: "Unique id of the created snowman"
+        }
+    ];
+}
+
+message ListSnowmenRequest {}
+
+message ListSnowmenResponse {
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_schema) = {
+        json_schema: {
+            title: "ListSnowmenResponse"
+            description: "ListSnowmenResponse - response of ListSnowmen"
+        }
+    };
+
+    repeated Snowman snowmen = 1 [
+        json_name = "snowmen"
+    ];
+}

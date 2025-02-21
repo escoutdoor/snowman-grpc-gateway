@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+package snowman.v1;
+
+import "protoc-gen-openapiv2/options/annotations.proto";
+import "google/api/annotations.proto";
+import "snowman/v1/messages.proto";
+
+option go_package="github.com/escoutdoor/snowman-grpc-gateway/pkg;snowman";
+
+option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+  info: {
+    title: "Snowman Service";
+    version: "1.0.0";
+    contact: {
+      name: "Ivan Popov";
+      url: "https://github.com/escoutdoor";
+      email: "vanap387@gmail.com";
+    };
+  };
+  external_docs: {
+    url: "https://github.com/escoutdoor";
+    description: "More about me xD";
+  };
+  schemes: HTTP;
+  schemes: HTTPS;
+};
+
+service SnowmanServiceV1 {
+    // Returns list of snowmen
+    rpc List(ListSnowmenRequest) returns (ListSnowmenResponse) {
+        option (google.api.http) = {
+            get: "/snowmen/v1"
+        };
+    };
+    // Builds snowman based on the specified parameters
+    rpc Build(BuildSnowmanRequest) returns (BuildSnowmanResponse) {
+        option (google.api.http) = {
+            post: "/snowmen/v1/build"
+            body: "*"
+        };
+    };
+}

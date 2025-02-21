@@ -1,0 +1,201 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Snowman Service",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Ivan Popov",
+      "url": "https://github.com/escoutdoor",
+      "email": "vanap387@gmail.com"
+    }
+  },
+  "tags": [
+    {
+      "name": "SnowmanServiceV1"
+    }
+  ],
+  "schemes": [
+    "http",
+    "https"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/snowmen/v1": {
+      "get": {
+        "summary": "Returns list of snowmen",
+        "operationId": "SnowmanServiceV1_List",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ListSnowmenResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "SnowmanServiceV1"
+        ]
+      }
+    },
+    "/snowmen/v1/build": {
+      "post": {
+        "summary": "Builds snowman based on the specified parameters",
+        "operationId": "SnowmanServiceV1_Build",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1BuildSnowmanResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "description": "BuildSnowmanRequest - request of Build",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1BuildSnowmanRequest"
+            }
+          }
+        ],
+        "tags": [
+          "SnowmanServiceV1"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    },
+    "rpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "v1BuildSnowmanRequest": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "title": "snowman name"
+        },
+        "height": {
+          "type": "integer",
+          "format": "int32",
+          "title": "snowman height in cms"
+        },
+        "width": {
+          "type": "integer",
+          "format": "int32",
+          "title": "snowman width in cms"
+        }
+      },
+      "description": "BuildSnowmanRequest - request of Build",
+      "title": "BuildSnowmanRequest",
+      "required": [
+        "name",
+        "height",
+        "width"
+      ]
+    },
+    "v1BuildSnowmanResponse": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique id of the created snowman"
+        }
+      },
+      "description": "BuildSnowmanResponse - response of Build",
+      "title": "BuildSnowmanResponse"
+    },
+    "v1ListSnowmenResponse": {
+      "type": "object",
+      "properties": {
+        "snowmen": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/v1Snowman"
+          }
+        }
+      },
+      "description": "ListSnowmenResponse - response of ListSnowmen",
+      "title": "ListSnowmenResponse"
+    },
+    "v1Snowman": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "title": "id - unique identifier of snowman"
+        },
+        "name": {
+          "type": "string",
+          "title": "name - snowman name"
+        },
+        "height": {
+          "type": "integer",
+          "format": "int32",
+          "title": "height - snowman's height in cms"
+        },
+        "width": {
+          "type": "integer",
+          "format": "int32",
+          "title": "width - snowman's width in cms"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "height",
+        "width"
+      ]
+    }
+  },
+  "externalDocs": {
+    "description": "More about me xD",
+    "url": "https://github.com/escoutdoor"
+  }
+}

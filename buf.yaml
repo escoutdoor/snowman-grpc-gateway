@@ -1,0 +1,12 @@
+version: v2
+modules:
+  - path: api
+  - path: vendor.protobuf
+lint:
+  use:
+    - STANDARD
+  ignore:
+    - vendor.protobuf
+breaking:
+  use:
+    - FILE
