@@ -104,11 +104,17 @@ func (a *App) initConfig(_ context.Context) error {
 }
 
 func (a *App) initGrpcServer(_ context.Context) error {
+	// creds, err := credentials.NewServerTLSFromFile("service.pem", "service.key")
+	// if err != nil {
+	// 	return fmt.Errorf("failed to load TLS keys: %s", err)
+	// }
+
 	grpcServer := grpc.NewServer(
 		grpc.ChainUnaryInterceptor(
 			interceptor.LoggerUnaryServerInterceptor(),
 			interceptor.ValidationUnaryServerInterceptor(a.serviceProvider.Validator()),
 		),
+		// grpc.Creds(creds),
 	)
 
 	reflection.Register(grpcServer)

@@ -26,7 +26,7 @@ func LoggerUnaryServerInterceptor() grpc.UnaryServerInterceptor {
 		logger.Debug(logCtx, "handle request")
 
 		if err != nil {
-			logger.Error(logCtx, "handle error", "error", err)
+			logger.ErrorKV(ctx, "handle error", "error", err)
 		}
 
 		return resp, err
