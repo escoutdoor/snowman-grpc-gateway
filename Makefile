@@ -73,9 +73,29 @@ run:
 	@go run ./cmd/snowman/main.go
 
 generate-cert:
-	openssl genrsa -out ca.key 4096
-	openssl req -new -x509 -key ca.key -sha256 -subj "/C=US/ST=NJ/O=CA, Inc." -days 365 -out ca.cert
-	openssl genrsa -out service.key 4096
-	openssl req -new -key service.key -out service.csr -config certificate.conf
-	openssl x509 -req -in service.csr -CA ca.cert -CAkey ca.key -CAcreateserial \
-    	-out service.pem -days 365 -sha256 -extfile certificate.conf -extensions req_ext
+	# openssl genrsa -aes256 -out certificate/ca.key 4096
+	openssl genrsa -out certificate/ca.key 4096
+
+	openssl req -new -x509 -sha256 -days 365 -key certificate/ca.key \
+		-subj "/C=UA/O=Snowman Corp/CN=localhost" \
+		-out certificate/ca.crt
+
+	# server
+	# openssl genrsa -aes256 -out certificate/server.key 4096
+	openssl genrsa -out certificate/server.key 4096
+
+	openssl req -new -key certificate/server.key -subj "/CN=localhost" \
+		-out certificate/server.csr
+
+	openssl x509 -req -in certificate/server.csr -CA certificate/ca.crt -CAkey certificate/ca.key \
+		-CAcreateserial -out certificate/server.crt \
+		-days 365 -extensions SAN -extfile certificate/cert.conf
+
+	# client
+	# openssl genrsa -aes256 -out certificate/client.key 4096
+	openssl genrsa -out certificate/client.key 4096
+
+	openssl req -new -key certificate/client.key -out certificate/client.csr
+
+	openssl x509 -req -days 365 -sha256 -in certificate/client.csr -CA certificate/ca.crt \
+		-CAkey certificate/ca.key -set_serial 2 -out certificate/client.crt

@@ -2,6 +2,8 @@ package app
 
 import (
 	"context"
+	"crypto/tls"
+	"crypto/x509"
 	"encoding/json"
 	"fmt"
 	"net"
@@ -18,9 +20,11 @@ import (
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/rs/cors"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/reflection"
 )
+
+const ()
 
 type App struct {
 	grpcServer    *grpc.Server
@@ -104,17 +108,12 @@ func (a *App) initConfig(_ context.Context) error {
 }
 
 func (a *App) initGrpcServer(_ context.Context) error {
-	// creds, err := credentials.NewServerTLSFromFile("service.pem", "service.key")
-	// if err != nil {
-	// 	return fmt.Errorf("failed to load TLS keys: %s", err)
-	// }
-
 	grpcServer := grpc.NewServer(
 		grpc.ChainUnaryInterceptor(
 			interceptor.LoggerUnaryServerInterceptor(),
 			interceptor.ValidationUnaryServerInterceptor(a.serviceProvider.Validator()),
 		),
-		// grpc.Creds(creds),
+		grpc.Creds(credentials.NewTLS(a.serviceProvider.TLSConfig())),
 	)
 
 	reflection.Register(grpcServer)
@@ -127,11 +126,32 @@ func (a *App) initGrpcServer(_ context.Context) error {
 func (a *App) initGatewayServer(ctx context.Context) error {
 	mux := runtime.NewServeMux()
 
-	opts := []grpc.DialOption{
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	caCert, err := os.ReadFile(caCertFilePath)
+	if err != nil {
+		return fmt.Errorf("failed to load ca certificate: %s", err)
 	}
 
-	err := pb.RegisterSnowmanServiceV1HandlerFromEndpoint(ctx, mux, a.serviceProvider.GrpcServerConfig().Addr(), opts)
+	clientCert, err := tls.LoadX509KeyPair(clientCertFilePath, clientKeyFilePath)
+	if err != nil {
+		return fmt.Errorf("failed to load client certificate and key: %s", err)
+	}
+
+	certPool := x509.NewCertPool()
+	if !certPool.AppendCertsFromPEM(caCert) {
+		return fmt.Errorf("failed to append ca certificate to certificate pool: %s", err)
+	}
+
+	tlsConfig := &tls.Config{
+		ServerName:   "localhost",
+		Certificates: []tls.Certificate{clientCert},
+		RootCAs:      certPool,
+	}
+
+	opts := []grpc.DialOption{
+		grpc.WithTransportCredentials(credentials.NewTLS(tlsConfig)),
+	}
+
+	err = pb.RegisterSnowmanServiceV1HandlerFromEndpoint(ctx, mux, a.serviceProvider.GrpcServerConfig().Addr(), opts)
 	if err != nil {
 		return fmt.Errorf("failed to register snowman service handler from endpoint: %w", err)
 	}
@@ -217,7 +237,7 @@ func (a *App) runGrpcServer() error {
 func (a *App) runGatewayServer() error {
 	logger.Logger().Info("running grpc gateway server: ", a.serviceProvider.GatewayServerConfig().Addr())
 
-	err := a.gatewayServer.ListenAndServe()
+	err := a.gatewayServer.ListenAndServeTLS(serverCertFilePath, serverKeyFilePath)
 	if err != nil {
 		return fmt.Errorf("listen and serve: %w", err)
 	}

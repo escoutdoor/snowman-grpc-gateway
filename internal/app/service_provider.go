@@ -1,6 +1,10 @@
 package app
 
 import (
+	"crypto/tls"
+	"crypto/x509"
+	"os"
+
 	"github.com/bufbuild/protovalidate-go"
 	snowman_implementation "github.com/escoutdoor/snowman-grpc-gateway/internal/api/snowman/v1"
 	"github.com/escoutdoor/snowman-grpc-gateway/internal/config"
@@ -11,6 +15,8 @@ type serviceProvider struct {
 	grpcServerConfig    config.GrpcServerConfig
 	gatewayServerConfig config.GatewayServerConfig
 	swaggerServerConfig config.SwaggerServerConfig
+
+	tlsConfig *tls.Config
 
 	validator protovalidate.Validator
 
@@ -78,4 +84,32 @@ func (s *serviceProvider) SnowmanImplementation() *snowman_implementation.Implem
 	}
 
 	return s.snowmanImplementation
+}
+
+func (s *serviceProvider) TLSConfig() *tls.Config {
+	if s.tlsConfig == nil {
+		caCert, err := os.ReadFile(caCertFilePath)
+		if err != nil {
+			logger.Logger().Fatalf("failed to load ca certificate: %s", err)
+		}
+
+		serverCert, err := tls.LoadX509KeyPair(serverCertFilePath, serverKeyFilePath)
+		if err != nil {
+			logger.Logger().Fatalf("failed to load server certificate and key: %s", err)
+		}
+
+		certPool := x509.NewCertPool()
+		if !certPool.AppendCertsFromPEM(caCert) {
+			logger.Logger().Fatalf("failed to append ca certificate to certificate pool: %s", err)
+		}
+
+		tlsConfig := &tls.Config{
+			Certificates: []tls.Certificate{serverCert},
+			ClientCAs:    certPool,
+			ClientAuth:   tls.RequireAndVerifyClientCert,
+		}
+		s.tlsConfig = tlsConfig
+	}
+
+	return s.tlsConfig
 }
