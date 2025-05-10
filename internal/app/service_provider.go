@@ -12,9 +12,10 @@ import (
 )
 
 type serviceProvider struct {
-	grpcServerConfig    config.GrpcServerConfig
-	gatewayServerConfig config.GatewayServerConfig
-	swaggerServerConfig config.SwaggerServerConfig
+	grpcServerConfig       config.GrpcServerConfig
+	gatewayServerConfig    config.GatewayServerConfig
+	swaggerServerConfig    config.SwaggerServerConfig
+	prometheusServerConfig config.PrometheusServerConfig
 
 	tlsConfig *tls.Config
 
@@ -63,6 +64,19 @@ func (s *serviceProvider) SwaggerServerConfig() config.SwaggerServerConfig {
 	}
 
 	return s.swaggerServerConfig
+}
+
+func (s *serviceProvider) PrometheusServerConfig() config.PrometheusServerConfig {
+	if s.prometheusServerConfig == nil {
+		cfg, err := config.NewPrometheusServerConfig()
+		if err != nil {
+			logger.Logger().Fatalf("failed to load prometheus server config: %s", err)
+		}
+
+		s.prometheusServerConfig = cfg
+	}
+
+	return s.prometheusServerConfig
 }
 
 func (s *serviceProvider) Validator() protovalidate.Validator {

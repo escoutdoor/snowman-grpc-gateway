@@ -32,3 +32,11 @@ type SwaggerServerConfig interface {
 	Addr() string
 	Filepath() string
 }
+
+type PrometheusServerConfig interface {
+	Addr() string
+}
+
+type JaegerConfig interface {
+	Addr() string
+}
