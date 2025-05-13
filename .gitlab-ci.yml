@@ -1,0 +1,28 @@
+variables:
+  GO_IMAGE: "golang:1.23.3"
+
+stages:
+  - test
+  - build
+  - deploy
+
+test:
+  stage: test
+  image: ${GO_IMAGE}
+  script:
+    - go fmt ./...
+    - go vet ./...
+    - go test ./...
+
+build:
+  stage: build
+  image: ${GO_IMAGE}
+  script:
+    - CGO_ENABLED=0 GOOS=linux go build -o ./bin/snowman_service ./cmd/snowman/main.go
+  artifacts:
+    paths:
+      - bin
+
+deploy:
+  stage: deploy
+  script: echo "Development script"
